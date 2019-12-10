@@ -3436,7 +3436,7 @@ config_di_pre_mc_mif(struct DI_MC_MIF_s *di_mcinfo_mif,
 
 	if (di_buf) {
 		pre_size_w = di_buf->vframe->width;
-		pre_size_h = di_buf->vframe->height  / 2;
+		pre_size_h = (di_buf->vframe->height + 1) / 2;
 		di_mcinfo_mif->size_x = pre_size_h / 2 - 1;
 		di_mcinfo_mif->size_y = 1;
 		di_mcinfo_mif->canvas_num = di_buf->mcinfo_canvas_idx;
