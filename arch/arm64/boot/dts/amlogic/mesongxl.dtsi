@@ -312,6 +312,12 @@
 		status = "okay";
 	};
 
+	meson_videotunnel{
+		compatible = "amlogic, meson_videotunnel";
+		status = "okay";
+	};
+
+
 	spicc:@c1108d80{
 		compatible = "amlogic, spicc";
 		status = "disabled";
