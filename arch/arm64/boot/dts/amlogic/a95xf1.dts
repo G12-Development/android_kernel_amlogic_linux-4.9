@@ -19,7 +19,8 @@
 
 #include <dt-bindings/interrupt-controller/arm-gic.h>
 #include "mesongxl.dtsi"
-#include "partition_mbox_normal.dtsi"
+//#include "partition_mbox_dynamic_deadpool.dtsi"
+#include "partition_mbox_normal_P_64.dtsi"
 / {
 	model = "Amlogic";
 	amlogic-dt-id = "gxl_p281_2g";
@@ -38,7 +39,7 @@
 
 	ion_dev {
 		compatible = "amlogic, ion_dev";
-		memory-region = <&ion_reserved>;
+		memory-region = <&ion_reserved &ion_fb_reserved>;
 	};
 
 	memory@00000000 {
@@ -90,14 +91,22 @@
 		di_cma_reserved:linux,di_cma {
 			compatible = "shared-dma-pool";
 			reusable;
+			status = "disable";
 			/** 10x3133440=30M(0x1e) support 8bit **/
-			size = <0x0 0x2000000>;
+			size = <0x0 0x0>;
 			alignment = <0x0 0x400000>;
 		};
 		ion_reserved:linux,ion-dev {
 			compatible = "shared-dma-pool";
 			reusable;
 			size = <0x0 0x7C00000>;
+			alignment = <0x0 0x400000>;
+		};
+		ion_fb_reserved:linux,ion-fb {
+			compatible = "amlogic, ion-fb-mem";
+			reusable;
+			/* 1920x1080x4x3 round up 4M align */
+			size = <0x0 0x1c00000>;
 			alignment = <0x0 0x400000>;
 		};
 
@@ -991,9 +1000,34 @@
 		status = "okay";
 	};
 
+	multi-di {
+		compatible = "amlogic, dim-gxl";
+		status = "okay";
+		/* 0:use reserved; 1:use cma; 2:use cma as reserved */
+		flag_cma = <4>; //<1>;
+		//memory-region = <&di_reserved>;
+		memory-region = <&di_cma_reserved>;
+		interrupts = <0 46 1
+				0 6 1>;
+		interrupt-names = "de_irq", "timerc";
+//		clocks = <&clkc CLKID_VPU_CLKB_TMP_COMP>,
+//			<&clkc CLKID_VPU_CLKB_COMP>;
+//		clock-names = "vpu_clkb_tmp_composite",
+//			"vpu_clkb_composite";
+//		clock-range = <334 667>;
+		/* buffer-size = <3621952>;(yuv422 8bit) */
+		buffer-size = <3133440>;/*yuv422 fullpack*/
+		/* reserve-iomap = "true"; */
+		/* if enable nr10bit, set nr10bit-support to 1 */
+		post-wr-support = <1>;
+		nr10bit-support = <1>;
+		nrds-enable = <0>; // enabling crashes gxl
+		pps-enable = <1>;
+	};
+
 	deinterlace {
 		compatible = "amlogic, deinterlace";
-		status = "okay";
+		status = "disabled";
 		flag_cma = <1>;/*0:use reserved;1:use cma*/
 		//memory-region = <&di_reserved>;
 		memory-region = <&di_cma_reserved>;
@@ -1102,14 +1136,6 @@
 		tx_op_color_primary = <0>;
 	};
 
-	provisionkey {
-		compatible = "amlogic, provisionkey";
-		status = "okay";
-		key-permit-default = "write";
-		//new key not need add dts if started with KEY_PROVISION_
-		KEY_PROVISION_XXX { };
-		//test_my_added_keyname { };
-	};//End provisionkey
 	unifykey{
 		compatible = "amlogic, unifykey";
 		status = "ok";
