@@ -3378,6 +3378,11 @@ static const struct file_operations di_fops = {
 #define ARY_MATCH (1)
 #ifdef ARY_MATCH
 
+static const struct di_meson_data  data_gxl = {
+	.name = "dim_gxl",
+	.ic_id	= DI_IC_ID_GXL,
+};
+
 static const struct di_meson_data  data_g12a = {
 	.name = "dim_g12a",
 	.ic_id	= DI_IC_ID_G12A,
@@ -3421,7 +3426,9 @@ static const struct di_meson_data  data_t5d = {
 /* #ifdef CONFIG_USE_OF */
 static const struct of_device_id amlogic_deinterlace_dt_match[] = {
 	/*{ .compatible = "amlogic, deinterlace", },*/
-	{	.compatible = "amlogic, dim-g12a",
+	{	.compatible = "amlogic, dim-gxl",
+		.data = &data_gxl,
+	}, {	.compatible = "amlogic, dim-g12a",
 		.data = &data_g12a,
 	}, {	.compatible = "amlogic, dim-g12b",
 		.data = &data_g12b,
