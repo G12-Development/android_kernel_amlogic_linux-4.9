@@ -18,8 +18,8 @@
 /dts-v1/;
 
 #include "mesonsm1.dtsi"
-#include "partition_mbox_normal_dynamic.dtsi"
-#include "mesonsm1_skt-panel.dtsi"
+#include "partition_mbox_dynamic_deadpool.dtsi"
+#include "remote-vontarx3-12btns.dtsi"
 
 / {
 	model = "Amlogic";
@@ -46,7 +46,7 @@
 
 	memory@00000000 {
 		device_type = "memory";
-		linux,usable-memory = <0x0 0x000000 0x0 0x80000000>;
+		linux,usable-memory = <0x0 0x000000 0x0 0xd8000000>;
 	};
 
 	reserved-memory {
@@ -86,14 +86,14 @@
 		ion_cma_reserved:linux,ion-dev {
 			compatible = "shared-dma-pool";
 			reusable;
-			size = <0x0 0x8000000>;
+			size = <0x0 0x4C00000>;
 			alignment = <0x0 0x400000>;
 		};
 		ion_fb_reserved:linux,ion-fb {
 			compatible = "amlogic, ion-fb-mem";
 			reusable;
-			/* 1920x1080x4x3 round up 4M align */
-			size = <0x0 0x1c00000>;
+			/* 1920x1080x4x6 round up 4M align */
+			size = <0x0 0x3400000>;
 			alignment = <0x0 0x400000>;
 		};
 		//di_reserved:linux,di {
@@ -181,26 +181,7 @@
 
 	gpioleds {
 		compatible = "gpio-leds";
-		status = "disabled";
-
-		net_red {
-			label="net_red";
-			/*gpios=<&gpio GPIOA_14 GPIO_ACTIVE_LOW>;*/
-			default-state ="on";
-		};
-
-		net_green {
-			label="net_green";
-			/*gpios=<&gpio GPIOA_15 GPIO_ACTIVE_HIGH>;*/
-			default-state ="on";
-		};
-
-		remote_led {
-			label = "remote_led";
-			gpios = <&gpio_ao GPIOAO_10 GPIO_ACTIVE_LOW>;
-			default-state = "off";
-			linux,default-trigger = "rc_feedback";
-		};
+		status = "okay";
 
 		sys_led {
 			label="sys_led";
@@ -435,66 +416,6 @@
 		status = "okay";
 		amlvideo2_id = <1>;
 		cma_mode = <1>;
-	};
-
-	vm0 {
-		compatible = "amlogic, vm";
-		memory-region = <&vm0_cma_reserved>;
-		dev_name = "vm0";
-		status = "disabled";
-		vm_id = <0>;
-	};
-
-	amvdec_656in {
-		/*bt656 gpio conflict with i2c0*/
-		compatible = "amlogic, amvdec_656in";
-		dev_name = "amvdec_656in";
-		status = "disabled";
-		reg = <0x0 0xffe02000 0x0 0x7c>;
-		clocks = <&clkc CLKID_BT656_COMP>,
-		      <&clkc CLKID_BT656>;
-		clock-names = "cts_bt656_clk1",
-		      "clk_gate_bt656";
-		/* bt656in1, bt656in2 */
-		bt656in1 {
-		bt656_id = <1>;
-		status = "disabled";
-		};
-	};
-
-	aml_cams {
-		compatible = "amlogic, cams_prober";
-		status = "disabled";
-		pinctrl-names="default";
-		pinctrl-0=<&cam_dvp_pins &gen_clk_ee_z>;
-		clocks = <&clkc CLKID_GEN_CLK>;
-		clock-names = "g12a_24m";
-		cam_0{
-			cam_name = "gc2145";
-			front_back = <0>;
-			/*u200 i2c2 gpio conflict with ethmac*/
-			camera-i2c-bus = <&i2c2>;
-			gpio_pwdn-gpios = <&gpio GPIOZ_2 GPIO_ACTIVE_HIGH>;
-			gpio_rst-gpios = <&gpio GPIOZ_12 GPIO_ACTIVE_HIGH>;
-			mirror_flip = <1>;
-			vertical_flip = <1>;
-			spread_spectrum = <0>;
-			bt_path = "gpio";
-			bt_path_count = <1>;
-			vdin_path = <0>;
-			status = "okay";
-		};
-	};
-
-	gpio_keypad{
-		compatible = "amlogic, gpio_keypad";
-		status = "okay";
-		scan_period = <20>;
-		key_num = <1>;
-		key_name = "power";
-		key_code = <116>;
-		key-gpios = <&gpio_ao  GPIOAO_3  GPIO_ACTIVE_HIGH>;
-		detect_mode = <0>;/*0:polling mode, 1:irq mode*/
 	};
 
 	provisionkey {
@@ -1018,7 +939,7 @@
 };
 
 &i2c0 {
-	status = "okay";
+	status = "disabled";
 	pinctrl-names="default";
 	pinctrl-0=<&i2c0_master_pins2>;
 	clock-frequency = <400000>;
@@ -1052,7 +973,7 @@
  */
 
 &i2c3 {
-	status = "ok";
+	status = "disabled";
 	pinctrl-names="default";
 	pinctrl-0=<&i2c3_master_pins2>;
 	clock-frequency = <300000>; /* default 100k */
@@ -1265,7 +1186,7 @@
 		 *	LOOPBACK, 7
 		 */
 		resample_module = <4>;
-		status = "disabled";
+		status = "okay";
 	};
 
 	vad:vad {
@@ -1625,7 +1546,7 @@
 
 &vdin1 {
 	memory-region = <&vdin1_cma_reserved>;
-	status = "okay";
+	status = "disabled";
 	/*vdin write mem color depth support:
 	 *bit0:support 8bit
 	 *bit1:support 9bit
@@ -1648,9 +1569,8 @@
 			 "MMC_CAP_ERASE",
 			 "MMC_CAP_CMD23",
 			 "MMC_CAP_DRIVER_TYPE_D";
-		caps2 = "MMC_CAP2_HS200", "MMC_CAP2_HS400";
 		f_min = <400000>;
-		f_max = <200000000>;
+		f_max = <170000000>;
 	};
 };
 
@@ -1680,7 +1600,7 @@
 			 "MMC_PM_KEEP_POWER",
 			 "MMC_CAP_SDIO_IRQ";
 		f_min = <400000>;
-		f_max = <200000000>;
+		f_max = <170000000>;
 	};
 };
 
