@@ -574,7 +574,7 @@
 	};
 
 	dummy_venc: dummy_venc {
-		compatible = "amlogic, dummy_venc";
+		compatible = "amlogic, dummy_venc-gxl";
 		status = "okay";
 		clocks = <&clkc CLKID_VCLK2_ENCP
 			&clkc CLKID_VCLK2_VENCP0
