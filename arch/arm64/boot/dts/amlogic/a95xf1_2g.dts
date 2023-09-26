@@ -19,7 +19,7 @@
 
 #include <dt-bindings/interrupt-controller/arm-gic.h>
 #include "mesongxl.dtsi"
-#include "partition_mbox_normal.dtsi"
+#include "partition_mbox_normal_P_64.dtsi"
 / {
 	model = "Amlogic";
 	amlogic-dt-id = "gxl_p281_2g";
@@ -38,7 +38,8 @@
 
 	ion_dev {
 		compatible = "amlogic, ion_dev";
-		memory-region = <&ion_reserved>;
+		memory-region = <&ion_reserved
+			&ion_fb_reserved>;
 	};
 
 	memory@00000000 {
@@ -75,11 +76,33 @@
 		logo_reserved:linux,meson-fb {
 			compatible = "shared-dma-pool";
 			reusable;
-			size = <0x0 0x400000>;
+			size = <0x0 0x800000>;
 			alignment = <0x0 0x400000>;
-			alloc-ranges = <0x0 0x7fc00000 0x0 0x400000>;
+			alloc-ranges = <0x0 0x7f800000 0x0 0x800000>;
+		};
+		di_cma_reserved:linux,di_cma {
+			compatible = "shared-dma-pool";
+			status="disable";
+			reusable;
+			/** 10x3133440=30M(0x1e) support 8bit **/
+			size = <0x0 0x0>;
+			alignment = <0x0 0x400000>;
 		};
 		//don't put other dts in front of logo_reserved
+		ion_reserved:linux,ion-dev {
+			compatible = "shared-dma-pool";
+			reusable;
+			size = <0x0 0x4c00000>;
+			alignment = <0x0 0x400000>;
+		};
+		ion_fb_reserved:linux,ion-fb {
+			compatible = "amlogic, ion-fb-mem";
+			reusable;
+			/* 1920x1080x4x3 round up 4M align */
+			size = <0x0 0x3400000>;
+			alignment = <0x0 0x400000>;
+		};
+
 
 		//di_reserved:linux,di {
 		//	compatible = "amlogic, di-mem";
@@ -87,19 +110,6 @@
 		//	size = <0x0 0x1e00000>;
 			//no-map;
 		//};
-		di_cma_reserved:linux,di_cma {
-			compatible = "shared-dma-pool";
-			reusable;
-			/** 10x3133440=30M(0x1e) support 8bit **/
-			size = <0x0 0x2000000>;
-			alignment = <0x0 0x400000>;
-		};
-		ion_reserved:linux,ion-dev {
-			compatible = "shared-dma-pool";
-			reusable;
-			size = <0x0 0x7C00000>;
-			alignment = <0x0 0x400000>;
-		};
 
 		/*  vdin0 CMA pool */
 		//vdin0_cma_reserved:linux,vdin0_cma {
@@ -119,7 +129,7 @@
 			/* up to 1920x1080 yuv422 8bit and 5 buffers
 			 * 1920x1080x2x5 = 20 M
 			 */
-			size = <0x0 0x01400000>;
+			size = <0x0 0x0>;
 			alignment = <0x0 0x400000>;
 		};
 		/*  POST PROCESS MANAGER */
@@ -132,7 +142,7 @@
 			compatible = "shared-dma-pool";
 			reusable;
 			/* ion_codec_mm max can alloc size 80M*/
-			size = <0x0 0x13400000>;
+			size = <0x0 0x1b000000>;
 			alignment = <0x0 0x400000>;
 			linux,contiguous-region;
 		};
@@ -154,7 +164,7 @@
 
 	cma_shrinker {
 		compatible = "amlogic, cma-shrinker";
-		status = "okay";
+		status = "disabled";
 		adj  = <0 100 200 250 900 950>;
 		free = <8192 12288 16384 24576 28672 32768>;
 	};
@@ -769,14 +779,14 @@
 		interrupts = <0 3 1
 			0 89 1>;
 		interrupt-names = "viu-vsync", "rdma";
-		mem_size = <0x00400000 0x00b00000 0x00100000>;
+		mem_size = <0x800000 0x1800000 0x100000>;
 		/* uboot logo,fb0/fb1 memory size,if afbcd fb0=0x01851000*/
-		display_mode_default = "720p60hz";
+		display_mode_default = "1080p60hz";
 		scale_mode = <1>;
 		/** 0:VPU free scale 1:OSD free scale 2:OSD super scale */
-		display_size_default = <1280 720 1280 2160 32>;
+		display_size_default = <1920 1080 1920 3240 32>;
 		/*1920*1080*4*3 = 0x17BB000*/
-		logo_addr = "0x7fc00000";
+		logo_addr = "0x7f800000";
 	};
 	ge2d {
 		compatible = "amlogic, ge2d-gxl";
@@ -994,7 +1004,7 @@
 	deinterlace {
 		compatible = "amlogic, deinterlace";
 		status = "okay";
-		flag_cma = <1>;/*0:use reserved;1:use cma*/
+		flag_cma = <4>;/*0:use reserved;1:use cma*/
 		//memory-region = <&di_reserved>;
 		memory-region = <&di_cma_reserved>;
 		interrupts = <0 46 1 0 6 1>;
